@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+  "name": "Crunchyroll Custom Subtitles",
+  "version": "1.0.0",
+  "description": "Load custom .srt subtitle files on Crunchyroll",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "crunchyroll-subtitles@local",
+      "strict_min_version": "109.0"
+    }
+  },
+  "permissions": ["storage", "activeTab"],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Custom Subtitles"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.crunchyroll.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

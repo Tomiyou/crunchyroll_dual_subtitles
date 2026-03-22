@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Subtitles</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 280px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      padding: 12px;
+    }
+
+    h1 {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #f47521;
+      letter-spacing: 0.5px;
+    }
+
+    .section {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      color: #aaa;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .file-btn {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      background: #2a2a2a;
+      border: 1px dashed #555;
+      border-radius: 4px;
+      color: #ccc;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .file-btn:hover { background: #333; border-color: #f47521; color: #fff; }
+
+    #file-input { display: none; }
+
+    #status {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+      min-height: 16px;
+    }
+    #status.ok  { color: #4caf50; }
+    #status.err { color: #f44336; }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input[type="number"] {
+      width: 70px;
+      padding: 5px 7px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 12px;
+    }
+    input[type="number"]:focus { outline: none; border-color: #f47521; }
+
+    button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.85; }
+    button:active { opacity: 0.7; }
+
+    #btn-apply-offset {
+      background: #f47521;
+      color: #fff;
+    }
+
+    #btn-clear {
+      width: 100%;
+      background: #333;
+      color: #ccc;
+      border: 1px solid #444;
+      padding: 7px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #2a2a2a;
+      margin: 10px 0;
+    }
+
+    #no-video-warning {
+      font-size: 11px;
+      color: #f47521;
+      display: none;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Crunchyroll Subtitles</h1>
+
+  <div class="section">
+    <label>Subtitle file (.srt)</label>
+    <div class="file-btn" id="file-label">Click to load .srt file</div>
+    <input type="file" id="file-input" accept=".srt,.txt" />
+    <div id="status"></div>
+    <div id="no-video-warning">No video detected on this page.</div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section">
+    <label>Timing offset (seconds)</label>
+    <div class="row">
+      <input type="number" id="offset-input" value="0" step="0.5" placeholder="0.0" />
+      <button id="btn-apply-offset">Apply</button>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <button id="btn-clear">Clear subtitles</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
