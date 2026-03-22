@@ -52,26 +52,11 @@
     const el = document.createElement('div');
     el.id = 'crc-subtitle-overlay';
     el.style.cssText = `
-      position: absolute;
-      bottom: 8%;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed;
       z-index: 2147483647;
-      pointer-events: none;
       text-align: center;
-      max-width: 80%;
-      font-family: Arial, sans-serif;
-      font-size: 1.4em;
-      line-height: 1.4;
+      width: 100%;
       color: #ffffff;
-      text-shadow:
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000,
-        0 0 8px rgba(0,0,0,0.9);
-      white-space: pre-line;
-      display: none;
     `;
     return el;
   }
@@ -79,11 +64,11 @@
   function getPlayerContainer() {
     // Crunchyroll player containers (may change with site updates)
     const selectors = [
-      '[class*="video-player"]',
-      '[class*="player-container"]',
+      // '[class*="video-player"]',
+      // '[class*="player-container"]',
       '#player-container',
-      '.video-container',
-      'div[data-testid*="player"]',
+      // '.video-container',
+      // 'div[data-testid*="player"]',
     ];
     for (const sel of selectors) {
       const el = document.querySelector(sel);
