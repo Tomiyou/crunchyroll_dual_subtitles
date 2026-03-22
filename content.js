@@ -99,12 +99,22 @@
     }
   }
 
+  function positionOverlay() {
+    if (!video || !overlay) return;
+    const rect = video.getBoundingClientRect();
+    overlay.style.left   = rect.left + 'px';
+    overlay.style.width  = rect.width + 'px';
+    overlay.style.bottom = (window.innerHeight - rect.bottom + 16) + 'px';
+  }
+
   // ── Subtitle rendering loop ────────────────────────────────────────────────
   function renderLoop() {
     if (!video || !overlay || subtitles.length === 0) {
       rafId = requestAnimationFrame(renderLoop);
       return;
     }
+
+    positionOverlay();
 
     const t = video.currentTime;
     // Binary-search-ish: just linear scan is fine for typical SRT sizes
