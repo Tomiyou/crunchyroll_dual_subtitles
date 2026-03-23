@@ -75,7 +75,7 @@ fileInput2.addEventListener('change', () => {
   const file = fileInput2.files[0];
   if (!file) return;
 
-  loadSRT(file, false, fileLabel);
+  loadSRT(file, false, fileLabel2);
 });
 
 // ── Offset ────────────────────────────────────────────────────────────────────
