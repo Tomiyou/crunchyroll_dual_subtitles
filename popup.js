@@ -1,7 +1,9 @@
 'use strict';
 
 const fileInput       = document.getElementById('file-input');
+const fileInput2      = document.getElementById('file-input2');
 const fileLabel       = document.getElementById('file-label');
+const fileLabel2      = document.getElementById('file-label2');
 const statusEl        = document.getElementById('status');
 const offsetInput     = document.getElementById('offset-input');
 const btnApplyOffset  = document.getElementById('btn-apply-offset');
@@ -40,18 +42,16 @@ async function sendToContent(msg) {
 
 // ── File loading ──────────────────────────────────────────────────────────────
 fileLabel.addEventListener('click', () => fileInput.click());
+fileLabel2.addEventListener('click', () => fileInput.click());
 
-fileInput.addEventListener('change', () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-
+function loadSRT(file, primary, label) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const content = e.target.result;
-    fileLabel.textContent = file.name;
+    label.textContent = file.name;
     setStatus('Sending…');
 
-    const res = await sendToContent({ type: 'LOAD_SRT', content });
+    const res = await sendToContent({ type: 'LOAD_SRT', content, primary });
     if (!res) return;
 
     if (res.ok) {
@@ -63,6 +63,19 @@ fileInput.addEventListener('change', () => {
   };
   reader.onerror = () => setStatus('Could not read file.', 'err');
   reader.readAsText(file, 'UTF-8');
+}
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  loadSRT(file, true, fileLabel);
+});
+fileInput2.addEventListener('change', () => {
+  const file = fileInput2.files[0];
+  if (!file) return;
+
+  loadSRT(file, false, fileLabel);
 });
 
 // ── Offset ────────────────────────────────────────────────────────────────────

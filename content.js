@@ -3,6 +3,7 @@
 
   // ── State ──────────────────────────────────────────────────────────────────
   let subtitles = [];   // [{ start, end, text }]
+  let subtitles2 = [];  // [{ start, end, text }]
   let overlay = null;   // the subtitle div
   let video = null;     // the <video> element
   let rafId = null;     // requestAnimationFrame id
@@ -57,7 +58,9 @@
       text-align: center;
       width: 100%;
       color: #ffffff;
+      font-size: 20rem;
     `;
+    el.innerHTML = "Heroin za zajtrk...";
     return el;
   }
 
@@ -97,14 +100,24 @@
         container.appendChild(overlay);
       }
     }
+    positionOverlay();
   }
 
   function positionOverlay() {
     if (!video || !overlay) return;
     const rect = video.getBoundingClientRect();
-    overlay.style.left   = rect.left + 'px';
-    overlay.style.width  = rect.width + 'px';
     overlay.style.bottom = (window.innerHeight - rect.bottom + 16) + 'px';
+  }
+
+  function cleanSubtitle(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\{[^}]*\}/g, '')      // remove SSA tags like {\an8}
+      .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/gis, '<b>$1</b>')
+      .replace(/&lt;i&gt;(.*?)&lt;\/i&gt;/gis, '<i>$1</i>')
+      .replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gis, '<u>$1</u>');
   }
 
   // ── Subtitle rendering loop ────────────────────────────────────────────────
@@ -113,8 +126,6 @@
       rafId = requestAnimationFrame(renderLoop);
       return;
     }
-
-    positionOverlay();
 
     const t = video.currentTime;
     // Binary-search-ish: just linear scan is fine for typical SRT sizes
@@ -125,18 +136,24 @@
         break;
       }
     }
+    let active2 = null;
+    for (const sub of subtitles2) {
+      if (t >= sub.start && t <= sub.end) {
+        active2 = sub;
+        break;
+      }
+    }
 
-    if (active) {
+    if (active || active2) {
       // Sanitise HTML tags that some SRT files use (bold/italic)
-      const html = active.text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\{[^}]*\}/g, '')      // remove SSA tags like {\an8}
-        .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/gis, '<b>$1</b>')
-        .replace(/&lt;i&gt;(.*?)&lt;\/i&gt;/gis, '<i>$1</i>')
-        .replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gis, '<u>$1</u>');
-      overlay.innerHTML = html;
+      let subtitleHtml = (active) ? cleanSubtitle(active.text) : "";
+      if (active2) {
+        if (subtitleHtml !== "") {
+          subtitleHtml += "<br>"
+        }
+        subtitleHtml += cleanSubtitle(active2.text);
+      }
+      overlay.innerHTML = subtitleHtml;
       overlay.style.display = 'block';
     } else {
       overlay.style.display = 'none';
@@ -185,6 +202,7 @@
       lastUrl = location.href;
       video = null;
       subtitles = [];
+      subtitles2 = [];
       if (overlay) { overlay.remove(); overlay = null; }
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       clearInterval(initInterval);
@@ -205,24 +223,37 @@
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.type === 'LOAD_SRT') {
       try {
-        subtitles = parseSRT(msg.content);
+        let subtitleLength = 0;
+        if (msg.primary) {
+          subtitles = parseSRT(msg.content);
+          subtitleLength = subtitles.length;
+        } else {
+          subtitles2 = parseSRT(msg.content);
+          subtitleLength = subtitles2.length;
+        }
         if (!video) video = findVideo();
         if (!overlay) {
           overlay = createOverlay();
           attachOverlay();
         }
         startLoop();
-        sendResponse({ ok: true, count: subtitles.length });
+        sendResponse({ ok: true, count: subtitleLength });
       } catch (e) {
         sendResponse({ ok: false, error: e.message });
       }
     } else if (msg.type === 'CLEAR_SRT') {
       subtitles = [];
+      subtitles2 = [];
       if (overlay) overlay.style.display = 'none';
       sendResponse({ ok: true });
     } else if (msg.type === 'SET_OFFSET') {
       // Shift all subtitle times by `msg.seconds`
       subtitles = subtitles.map(s => ({
+        ...s,
+        start: Math.max(0, s.start + msg.seconds),
+        end:   Math.max(0, s.end   + msg.seconds),
+      }));
+      subtitles2 = subtitles2.map(s => ({
         ...s,
         start: Math.max(0, s.start + msg.seconds),
         end:   Math.max(0, s.end   + msg.seconds),
